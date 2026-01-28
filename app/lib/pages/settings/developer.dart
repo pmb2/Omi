@@ -1603,6 +1603,43 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
 
                   const SizedBox(height: 32),
 
+                  // Agent Zero Wake Section
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, right: 4, bottom: 12),
+                    child: Text(
+                      'Agent Zero Wake',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1C1C1E),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildTextField(
+                          controller: provider.omiOpenUrl,
+                          label: 'Open URL on wake',
+                          hint: 'https://agent.backus.agency',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: provider.omiWakePhrases,
+                          label: 'Wake phrases (comma-separated)',
+                          hint: 'hey agent, hey agent zero',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
                   // Experimental Section
                   Padding(
                     padding: const EdgeInsets.only(left: 4, right: 4, bottom: 12),

@@ -38,6 +38,7 @@ import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/utils/debug_log_manager.dart';
 import 'package:omi/utils/enums.dart';
 import 'package:omi/utils/image/image_utils.dart';
+import 'package:omi/utils/memories/integrations.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:omi/utils/logger.dart';
@@ -231,6 +232,7 @@ class CaptureProvider extends ChangeNotifier
   }
 
   ServerConversation? _conversation;
+  String _transcriptSessionId = '';
   List<TranscriptSegment> segments = [];
   List<ConversationPhoto> photos = [];
   Map<String, SpeakerLabelSuggestionEvent> suggestionsBySegmentId = {};
@@ -320,6 +322,7 @@ class CaptureProvider extends ChangeNotifier
     hasTranscripts = false;
     suggestionsBySegmentId = {};
     _conversation = null;
+    _transcriptSessionId = '';
     taggingSegmentIds = [];
     notifyListeners();
   }
@@ -1600,6 +1603,11 @@ class CaptureProvider extends ChangeNotifier
         _isLoadingInProgressConversation = false;
       }
     }
+
+    if (_transcriptSessionId.isEmpty) {
+      _transcriptSessionId = _conversation?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+    }
+    await triggerTranscriptSegmentReceivedEvents(newSegments, _transcriptSessionId);
 
     final remainSegments = TranscriptSegment.updateSegments(segments, newSegments);
     segments.addAll(remainSegments);

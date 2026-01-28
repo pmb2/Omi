@@ -18,6 +18,8 @@ class DeveloperModeProvider extends BaseProvider {
   final TextEditingController webhookAudioBytesDelay = TextEditingController();
   final TextEditingController webhookWsAudioBytes = TextEditingController();
   final TextEditingController webhookDaySummary = TextEditingController();
+  final TextEditingController omiOpenUrl = TextEditingController();
+  final TextEditingController omiWakePhrases = TextEditingController();
 
   bool conversationEventsToggled = false;
   bool transcriptsToggled = false;
@@ -101,6 +103,8 @@ class DeveloperModeProvider extends BaseProvider {
     webhookOnTranscriptReceived.text = SharedPreferencesUtil().webhookOnTranscriptReceived;
     webhookAudioBytes.text = SharedPreferencesUtil().webhookAudioBytes;
     webhookAudioBytesDelay.text = SharedPreferencesUtil().webhookAudioBytesDelay;
+    omiOpenUrl.text = SharedPreferencesUtil().omiOpenUrl;
+    omiWakePhrases.text = SharedPreferencesUtil().omiWakePhrasesRaw;
     followUpQuestionEnabled = SharedPreferencesUtil().devModeJoanFollowUpEnabled;
     transcriptionDiagnosticEnabled = SharedPreferencesUtil().transcriptionDiagnosticEnabled;
     autoCreateSpeakersEnabled = SharedPreferencesUtil().autoCreateSpeakersEnabled;
@@ -174,6 +178,11 @@ class DeveloperModeProvider extends BaseProvider {
       setIsLoading(false);
       return;
     }
+    if (omiOpenUrl.text.isNotEmpty && !isValidUrl(omiOpenUrl.text)) {
+      AppSnackbar.showSnackbarError('Invalid Omi auto-open URL');
+      setIsLoading(false);
+      return;
+    }
     if (webhookDaySummary.text.isNotEmpty && !isValidUrl(webhookDaySummary.text)) {
       AppSnackbar.showSnackbarError(
         MyApp.navigatorKey.currentContext?.l10n.devModeInvalidDaySummaryWebhookUrl ?? 'Invalid day summary webhook URL',
@@ -203,6 +212,8 @@ class DeveloperModeProvider extends BaseProvider {
       prefs.webhookOnTranscriptReceived = webhookOnTranscriptReceived.text;
       prefs.webhookOnConversationCreated = webhookOnConversationCreated.text;
       prefs.webhookDaySummary = webhookDaySummary.text;
+      prefs.omiOpenUrl = omiOpenUrl.text.trim();
+      prefs.omiWakePhrasesRaw = omiWakePhrases.text.trim();
     } catch (e) {
       Logger.error('Error occurred while updating endpoints: $e');
     }

@@ -127,6 +127,26 @@ class SharedPreferencesUtil {
     return saveString('sttConfig_${provider.name}', jsonEncode(config.toJson()));
   }
 
+  String get omiOpenUrl => getString('omiOpenUrl');
+
+  set omiOpenUrl(String value) => saveString('omiOpenUrl', value);
+
+  String get omiWakePhrasesRaw => getString('omiWakePhrases', defaultValue: 'hey agent');
+
+  set omiWakePhrasesRaw(String value) => saveString('omiWakePhrases', value);
+
+  List<String> get omiWakePhrases {
+    final raw = omiWakePhrasesRaw.trim();
+    if (raw.isEmpty) return [];
+    return raw
+        .split(',')
+        .map((phrase) => phrase.trim())
+        .where((phrase) => phrase.isNotEmpty)
+        .toList();
+  }
+
+  String get recordingsLanguage => getString('recordingsLanguage', defaultValue: 'en');
+
   //----------------------------- Permissions ---------------------------------//
 
   set notificationsEnabled(bool value) => saveBool('notificationsEnabled', value);
