@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:omi/utils/logger.dart';
+const String? appFlavor = String.fromEnvironment('FLAVOR');
 
 enum Environment {
   prod,
