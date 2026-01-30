@@ -318,6 +318,7 @@ class TranscriptSocketServiceFactory {
         : _createPollingSocket(sampleRate, codec, config);
 
     // Wrap with composite service (primary STT + Omi backend)
+    final allowSecondaryFailure = config.provider == SttProvider.customLive || config.provider == SttProvider.custom;
     return _createCompositeService(
       sampleRate,
       codec,
@@ -326,6 +327,7 @@ class TranscriptSocketServiceFactory {
       source: source,
       sttConfigId: sttConfigId,
       sttProvider: config.provider.name,
+      allowSecondaryFailure: allowSecondaryFailure,
     );
   }
 
@@ -468,6 +470,7 @@ class TranscriptSocketServiceFactory {
     String? source,
     String? sttConfigId,
     String? sttProvider,
+    bool allowSecondaryFailure = false,
   }) {
     final secondaryService = CustomSttTranscriptSegmentSocketService.create(
       sampleRate,
@@ -479,6 +482,7 @@ class TranscriptSocketServiceFactory {
       primarySocket: primarySocket,
       secondarySocket: secondaryService.socket,
       sttProvider: sttProvider,
+      allowSecondaryFailure: allowSecondaryFailure,
     );
     return TranscriptSegmentSocketService.withSocket(
       sampleRate,

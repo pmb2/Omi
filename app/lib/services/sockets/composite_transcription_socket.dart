@@ -14,18 +14,21 @@ class CompositeTranscriptionSocket implements IPureSocket {
 
   final String? suggestedTranscriptType;
   final String? sttProvider;
+  final bool allowSecondaryFailure;
 
   PureSocketStatus _status = PureSocketStatus.notConnected;
   IPureSocketListener? _listener;
 
   late final _PrimarySocketListener _primaryListener;
   late final _SecondarySocketListener _secondaryListener;
+  bool _secondaryAvailable = true;
 
   CompositeTranscriptionSocket({
     required this.primarySocket,
     required this.secondarySocket,
     this.suggestedTranscriptType = 'suggested_transcript',
     this.sttProvider,
+    this.allowSecondaryFailure = false,
   }) {
     _primaryListener = _PrimarySocketListener(this);
     _secondaryListener = _SecondarySocketListener(this);
@@ -63,6 +66,21 @@ class CompositeTranscriptionSocket implements IPureSocket {
       _status = PureSocketStatus.connected;
       CustomSttLogService.instance.info('Composite', 'Both sockets connected');
       DebugLogManager.logEvent('composite_socket_connected', {
+        'primary_status': primarySocket.status.toString(),
+        'secondary_status': secondarySocket.status.toString(),
+      });
+      onConnected();
+      return true;
+    }
+
+    if (primaryOk && allowSecondaryFailure) {
+      _secondaryAvailable = false;
+      _status = PureSocketStatus.connected;
+      CustomSttLogService.instance.warning(
+        'Composite',
+        'Secondary socket unavailable; continuing with primary only',
+      );
+      DebugLogManager.logWarning('composite_socket_secondary_unavailable', {
         'primary_status': primarySocket.status.toString(),
         'secondary_status': secondarySocket.status.toString(),
       });
@@ -160,11 +178,17 @@ class CompositeTranscriptionSocket implements IPureSocket {
       return;
     }
     primarySocket.send(message);
-    secondarySocket.send(message);
+    if (_secondaryAvailable) {
+      secondarySocket.send(message);
+    }
   }
 
   void _onPrimaryMessage(dynamic message) {
-    _forwardAsSuggestedTranscript(message);
+    if (_secondaryAvailable) {
+      _forwardAsSuggestedTranscript(message);
+    } else {
+      onMessage(message);
+    }
   }
 
   void _forwardAsSuggestedTranscript(dynamic message) {
