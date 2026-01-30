@@ -556,7 +556,7 @@ class PureStreamingSttSocket implements IPureSocket {
               'text': segment.text.trim(),
               'speaker': speaker,
               'speaker_id': speakerId,
-              'is_user': false,
+              'is_user': true,
               'start': segment.start,
               'end': segment.end,
               'person_id': null,
