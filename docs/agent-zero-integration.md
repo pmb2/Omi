@@ -21,4 +21,5 @@ in the default browser when a wake phrase is detected in live transcripts.
 - Wake detection is transcript-based (no audio-level detection).
 - The app uses the default browser (`LaunchMode.externalApplication`).
 - A short cooldown prevents duplicate opens from the same utterance.
+- This fork seeds defaults on first launch (wake URL, phrases, and transcript webhook).
 

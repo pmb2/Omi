@@ -415,6 +415,9 @@ class CaptureProvider extends ChangeNotifier
       Logger.debug('[CustomSTT] Codec $codec not supported, falling back to Omi');
       effectiveConfig = null;
     }
+    if (effectiveConfig != null) {
+      language = _normalizeCustomSttLanguage(language, effectiveConfig);
+    }
 
     // Connect to the transcript socket
     _socket = await ServiceManager.instance().socket.conversation(
@@ -1613,6 +1616,20 @@ class CaptureProvider extends ChangeNotifier
     segments.addAll(remainSegments);
     hasTranscripts = true;
     notifyListeners();
+  }
+
+  String _normalizeCustomSttLanguage(String language, CustomSttConfig config) {
+    final raw = language.trim();
+    if (raw.isEmpty) return 'multi';
+
+    final supported = config.providerConfig.supportedLanguages;
+    if (supported.isEmpty) return raw;
+    if (supported.contains(raw)) return raw;
+
+    final base = raw.split('-').first;
+    if (supported.contains(base)) return base;
+
+    return supported.contains('multi') ? 'multi' : supported.first;
   }
 
   void onConnectionStateChanged(bool isConnected) {

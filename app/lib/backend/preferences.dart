@@ -28,6 +28,51 @@ class SharedPreferencesUtil {
 
   static Future<void> init() async {
     _preferences = await SharedPreferences.getInstance();
+    _seedDefaults();
+  }
+
+  static void _seedDefaults() {
+    const defaultPrimaryLanguage = 'en-US';
+    final hasSetPrimaryLanguage = _preferences?.getBool('hasSetPrimaryLanguage') ?? false;
+    final savedPrimaryLanguage = _preferences?.getString('userPrimaryLanguage') ?? '';
+    if (!hasSetPrimaryLanguage && savedPrimaryLanguage.isEmpty) {
+      _preferences?.setString('userPrimaryLanguage', defaultPrimaryLanguage);
+      _preferences?.setBool('hasSetPrimaryLanguage', true);
+    }
+
+    final savedOmiOpenUrl = _preferences?.getString('omiOpenUrl') ?? '';
+    if (savedOmiOpenUrl.isEmpty) {
+      _preferences?.setString('omiOpenUrl', 'https://agent.backus.agency');
+    }
+
+    final savedOmiWakePhrases = _preferences?.getString('omiWakePhrases') ?? '';
+    if (savedOmiWakePhrases.isEmpty) {
+      _preferences?.setString('omiWakePhrases', 'hey agent');
+    }
+
+    final savedTranscriptWebhook = _preferences?.getString('webhookOnTranscriptReceived') ?? '';
+    if (savedTranscriptWebhook.isEmpty) {
+      _preferences?.setString('webhookOnTranscriptReceived', 'https://agent.backus.agency/omi_webhook');
+    }
+
+    final savedAudioBytesWebhook = _preferences?.getString('webhookAudioBytes') ?? '';
+    if (savedAudioBytesWebhook.isEmpty) {
+      _preferences?.setString('webhookAudioBytes', 'wss://stt.backus.agency/omi');
+    }
+
+    final savedAudioBytesDelay = _preferences?.getString('webhookAudioBytesDelay') ?? '';
+    if (savedAudioBytesDelay.isEmpty) {
+      _preferences?.setString('webhookAudioBytesDelay', '5');
+    }
+
+    final savedCustomStt = _preferences?.getString('customSttConfig') ?? '';
+    if (savedCustomStt.isEmpty) {
+      final config = CustomSttConfig(
+        provider: SttProvider.customLive,
+        url: 'wss://stt.backus.agency/omi',
+      );
+      _preferences?.setString('customSttConfig', jsonEncode(config.toJson()));
+    }
   }
 
   set uid(String value) => saveString('uid', value);

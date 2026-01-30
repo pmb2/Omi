@@ -63,6 +63,18 @@ If env fields change, regenerate:
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+## Default integration values (fork)
+
+This fork seeds defaults on first launch:
+
+- Primary language: `en-US`
+- Wake phrases: `hey agent`
+- Wake URL: `https://agent.backus.agency`
+- Transcript webhook: `https://agent.backus.agency/omi_webhook`
+- Custom STT (live): `wss://stt.backus.agency/omi`
+
+You can override these in Settings → Developer Settings or Transcription.
+
 ## Build & install (Android)
 
 From `app/`:
