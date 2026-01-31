@@ -54,6 +54,14 @@ To build and deploy the app to an iPhone so it can run independently from your l
 
 Once installed, the app will run on your iPhone independently from your development machine.
 
+## Customizations in this fork
+
+- Default locale is set to English (United States) on first launch.
+- Agent Zero wake integration:
+  - Detects wake phrases and opens the default browser to your Agent Zero URL.
+  - If Android blocks background launches, a high-priority notification is shown instead.
+  - Pendant haptics + LED feedback are triggered on wake and send (when supported by firmware features).
+
 ## Need Help?
 
 - 💬 Join our [Discord Community](http://discord.omi.me)

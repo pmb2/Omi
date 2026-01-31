@@ -23,17 +23,12 @@ class LocaleProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final localeCode = prefs.getString(_localeKey);
     if (localeCode != null) {
-      _locale = Locale(localeCode);
+      final parts = localeCode.split('_');
+      _locale = parts.length > 1 ? Locale(parts[0], parts[1]) : Locale(parts[0]);
     } else {
-      final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
-      // Check if the device locale is supported
-      if (AppLocalizations.supportedLocales.any((locale) => locale.languageCode == deviceLocale.languageCode)) {
-        _locale = Locale(deviceLocale.languageCode);
-      } else {
-        _locale = const Locale('en');
-      }
+      _locale = const Locale('en', 'US');
       // Save the default choice so it persists as an explicit selection
-      await prefs.setString(_localeKey, _locale!.languageCode);
+      await prefs.setString(_localeKey, 'en_US');
     }
     _initialized = true;
     notifyListeners();
@@ -44,7 +39,10 @@ class LocaleProvider extends ChangeNotifier {
     if (locale == null) return; // Do not allow setting to null (System Default)
     _locale = locale;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_localeKey, locale.languageCode);
+    final code = locale.countryCode != null
+        ? '${locale.languageCode}_${locale.countryCode}'
+        : locale.languageCode;
+    await prefs.setString(_localeKey, code);
     notifyListeners();
   }
 

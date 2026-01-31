@@ -10,7 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 const Duration _wakeCooldown = Duration(seconds: 2);
 const Duration _wakeLaunchCooldown = Duration(seconds: 8);
-const Duration _wakeSilenceTimeout = Duration(milliseconds: 1200);
+const Duration _wakeSilenceTimeout = Duration(milliseconds: 2500);
 const Duration _wakeBlinkInterval = Duration(milliseconds: 400);
 DateTime? _lastWakeOpenedAt;
 DateTime? _lastWakeActivityAt;
