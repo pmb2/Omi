@@ -114,6 +114,8 @@ In Settings → Developer Settings:
 - **Wake phrases**: `hey agent, hey agent zero`
 
 When a wake phrase is detected in live transcripts, the app opens the default browser to the Agent Zero UI.
+If the app is in the background and Android blocks automatic launch, a
+high‑priority notification appears; tapping it opens the browser.
 
 ### 3) Wake feedback (haptic + LED)
 

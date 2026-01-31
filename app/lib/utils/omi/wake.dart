@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:omi/backend/preferences.dart';
 import 'package:omi/backend/schema/transcript_segment.dart';
 import 'package:omi/services/devices.dart';
+import 'package:omi/services/notifications/notification_service.dart';
 import 'package:omi/services/services.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const Duration _wakeCooldown = Duration(seconds: 2);
+const Duration _wakeLaunchCooldown = Duration(seconds: 8);
 const Duration _wakeSilenceTimeout = Duration(milliseconds: 1200);
 const Duration _wakeBlinkInterval = Duration(milliseconds: 400);
 DateTime? _lastWakeOpenedAt;
@@ -36,17 +38,41 @@ Future<void> maybeOpenAgentZeroOnWake(List<TranscriptSegment> segments) async {
     if (_containsWakePhrase(segment.text, phrases)) {
       _lastWakeOpenedAt = now;
       await _startWakeSession();
-      await _openExternalUrl(url);
+      final launched = await _openExternalUrl(url);
+      if (!launched) {
+        await _showWakeNotification(url);
+      }
       break;
     }
   }
 }
 
-Future<void> _openExternalUrl(String url) async {
+Future<void> triggerWakeBrowserLaunch() async {
+  final url = SharedPreferencesUtil().omiOpenUrl.trim();
+  if (url.isEmpty) return;
+  final now = DateTime.now();
+  if (_lastWakeOpenedAt != null && now.difference(_lastWakeOpenedAt!) < _wakeLaunchCooldown) return;
+  _lastWakeOpenedAt = now;
+  final launched = await _openExternalUrl(url);
+  if (!launched) {
+    await _showWakeNotification(url);
+  }
+}
+
+Future<bool> _openExternalUrl(String url) async {
   final uri = Uri.tryParse(url);
-  if (uri == null) return;
-  if (!await canLaunchUrl(uri)) return;
-  await launchUrl(uri, mode: LaunchMode.externalApplication);
+  if (uri == null) return false;
+  if (!await canLaunchUrl(uri)) return false;
+  return launchUrl(uri, mode: LaunchMode.externalApplication);
+}
+
+Future<void> _showWakeNotification(String url) async {
+  await NotificationService.instance.createNotification(
+    title: 'Agent Zero',
+    body: 'Tap to open your live chat',
+    notificationId: 9101,
+    payload: {'open_url': url},
+  );
 }
 
 bool _containsWakePhrase(String text, List<String> phrases) {

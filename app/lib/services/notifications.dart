@@ -10,6 +10,7 @@ import 'package:omi/pages/home/page.dart';
 import 'package:omi/services/notifications/daily_reflection_notification.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/utils/logger.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Re-export the main notification service for backward compatibility
 // All notification functionality is now handled by the platform-aware service
@@ -64,6 +65,17 @@ class NotificationUtil {
     // Always ensure that all plugins was initialized
     // TODO: for what?
     WidgetsFlutterBinding.ensureInitialized();
+
+    if (payload.containsKey('open_url')) {
+      final rawUrl = payload['open_url'];
+      if (rawUrl is String && rawUrl.trim().isNotEmpty) {
+        final uri = Uri.tryParse(rawUrl.trim());
+        if (uri != null && await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      }
+    }
 
     String? navigateTo;
     if (payload.containsKey('navigate_to')) {
