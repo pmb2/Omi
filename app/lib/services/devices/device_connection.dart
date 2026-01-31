@@ -442,6 +442,29 @@ abstract class DeviceConnection {
 
   Future<int?> performGetLedDimRatio();
 
+  Future<void> setLedOverride(int mode) async {
+    if (await isConnected()) {
+      return await performSetLedOverride(mode);
+    }
+    _showDeviceDisconnectedNotification();
+  }
+
+  Future<void> performSetLedOverride(int mode) async {
+    Logger.debug('Led override not supported for this device.');
+  }
+
+  Future<int?> getLedOverride() async {
+    if (await isConnected()) {
+      return await performGetLedOverride();
+    }
+    _showDeviceDisconnectedNotification();
+    return null;
+  }
+
+  Future<int?> performGetLedOverride() async {
+    return null;
+  }
+
   Future<void> setMicGain(int gain) async {
     if (await isConnected()) {
       return await performSetMicGain(gain);

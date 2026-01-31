@@ -22,6 +22,7 @@
 #include "config.h"
 #include "features.h"
 #include "haptic.h"
+#include "led_override.h"
 #include "mic.h"
 #ifdef CONFIG_OMI_ENABLE_MONITOR
 #include "monitor.h"
@@ -89,6 +90,17 @@ static ssize_t settings_mic_gain_read_handler(struct bt_conn *conn,
                                               void *buf,
                                               uint16_t len,
                                               uint16_t offset);
+static ssize_t settings_led_override_write_handler(struct bt_conn *conn,
+                                                   const struct bt_gatt_attr *attr,
+                                                   const void *buf,
+                                                   uint16_t len,
+                                                   uint16_t offset,
+                                                   uint8_t flags);
+static ssize_t settings_led_override_read_handler(struct bt_conn *conn,
+                                                  const struct bt_gatt_attr *attr,
+                                                  void *buf,
+                                                  uint16_t len,
+                                                  uint16_t offset);
 static ssize_t
 features_read_handler(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset);
 
@@ -155,6 +167,8 @@ static struct bt_uuid_128 settings_dim_ratio_characteristic_uuid =
     BT_UUID_INIT_128(BT_UUID_128_ENCODE(0x19B10011, 0xE8F2, 0x537E, 0x4F6C, 0xD104768A1214));
 static struct bt_uuid_128 settings_mic_gain_characteristic_uuid =
     BT_UUID_INIT_128(BT_UUID_128_ENCODE(0x19B10012, 0xE8F2, 0x537E, 0x4F6C, 0xD104768A1214));
+static struct bt_uuid_128 settings_led_override_characteristic_uuid =
+    BT_UUID_INIT_128(BT_UUID_128_ENCODE(0x19B10013, 0xE8F2, 0x537E, 0x4F6C, 0xD104768A1214));
 
 static struct bt_gatt_attr settings_service_attr[] = {
     BT_GATT_PRIMARY_SERVICE(&settings_service_uuid),
@@ -169,6 +183,12 @@ static struct bt_gatt_attr settings_service_attr[] = {
                            BT_GATT_PERM_READ | BT_GATT_PERM_WRITE,
                            settings_mic_gain_read_handler,
                            settings_mic_gain_write_handler,
+                           NULL),
+    BT_GATT_CHARACTERISTIC(&settings_led_override_characteristic_uuid.uuid,
+                           BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE,
+                           BT_GATT_PERM_READ | BT_GATT_PERM_WRITE,
+                           settings_led_override_read_handler,
+                           settings_led_override_write_handler,
                            NULL),
 };
 
@@ -332,6 +352,40 @@ static ssize_t settings_mic_gain_read_handler(struct bt_conn *conn,
     return bt_gatt_attr_read(conn, attr, buf, len, offset, &current_gain, sizeof(current_gain));
 }
 
+static ssize_t settings_led_override_write_handler(struct bt_conn *conn,
+                                                   const struct bt_gatt_attr *attr,
+                                                   const void *buf,
+                                                   uint16_t len,
+                                                   uint16_t offset,
+                                                   uint8_t flags)
+{
+    if (len != 1) {
+        LOG_WRN("Invalid length for LED override write: %u", len);
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
+    }
+
+    uint8_t new_mode = ((uint8_t *) buf)[0];
+    if (new_mode > LED_OVERRIDE_GREEN_BLINK) {
+        new_mode = LED_OVERRIDE_GREEN_BLINK;
+    }
+
+    LOG_INF("Received LED override mode: %u", new_mode);
+    led_override_set(new_mode);
+
+    return len;
+}
+
+static ssize_t settings_led_override_read_handler(struct bt_conn *conn,
+                                                  const struct bt_gatt_attr *attr,
+                                                  void *buf,
+                                                  uint16_t len,
+                                                  uint16_t offset)
+{
+    uint8_t current_mode = led_override_get();
+    LOG_INF("Reading LED override mode: %u", current_mode);
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, &current_mode, sizeof(current_mode));
+}
+
 static ssize_t
 features_read_handler(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
 {
@@ -363,6 +417,8 @@ features_read_handler(struct bt_conn *conn, const struct bt_gatt_attr *attr, voi
 #endif
     // LED dimming is always enabled now with PWM.
     features |= OMI_FEATURE_LED_DIMMING;
+    // LED override (color/blink) is supported.
+    features |= OMI_FEATURE_LED_OVERRIDE;
     // Mic gain control is always enabled.
     features |= OMI_FEATURE_MIC_GAIN;
 

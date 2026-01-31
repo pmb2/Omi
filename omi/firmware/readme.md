@@ -65,6 +65,20 @@ Full live-code debugging is also supported using the nRF Connect extension; howe
 - **Transport**: Manages Bluetooth connectivity and audio streaming.
 - **Storage**: Handles SD card operations and audio file management.
 - **LED Control**: Provides visual feedback about device status.
+- **LED Override (BLE)**: Optional override for wake feedback (green solid/blink) via a BLE setting.
+
+## LED Override (BLE)
+
+The firmware exposes a BLE setting characteristic for temporary LED overrides:
+
+- **Service**: `19B10010-E8F2-537E-4F6C-D104768A1214` (Settings)
+- **Characteristic**: `19B10013-E8F2-537E-4F6C-D104768A1214`
+- **Value (1 byte)**:
+  - `0` = clear override (normal LED state)
+  - `1` = solid green
+  - `2` = blinking green
+
+This is used by the custom Omi app to show wake/streaming feedback without permanently changing LED brightness.
 
 ## On the Storage Reads
 

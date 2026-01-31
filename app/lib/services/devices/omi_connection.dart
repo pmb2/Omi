@@ -18,6 +18,7 @@ class OmiDeviceConnection extends DeviceConnection {
   static const String settingsServiceUuid = '19b10010-e8f2-537e-4f6c-d104768a1214';
   static const String settingsDimRatioCharacteristicUuid = '19b10011-e8f2-537e-4f6c-d104768a1214';
   static const String settingsMicGainCharacteristicUuid = '19b10012-e8f2-537e-4f6c-d104768a1214';
+  static const String settingsLedOverrideCharacteristicUuid = '19b10013-e8f2-537e-4f6c-d104768a1214';
   static const String featuresServiceUuid = '19b10020-e8f2-537e-4f6c-d104768a1214';
   static const String featuresCharacteristicUuid = '19b10021-e8f2-537e-4f6c-d104768a1214';
 
@@ -500,6 +501,31 @@ class OmiDeviceConnection extends DeviceConnection {
       return null;
     } catch (e) {
       Logger.debug('OmiDeviceConnection: Error getting LED dim ratio: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<void> performSetLedOverride(int mode) async {
+    try {
+      final safeMode = mode.clamp(0, 2).toInt();
+      await transport
+          .writeCharacteristic(settingsServiceUuid, settingsLedOverrideCharacteristicUuid, [safeMode]);
+    } catch (e) {
+      Logger.debug('OmiDeviceConnection: Error setting LED override mode: $e');
+    }
+  }
+
+  @override
+  Future<int?> performGetLedOverride() async {
+    try {
+      final value = await transport.readCharacteristic(settingsServiceUuid, settingsLedOverrideCharacteristicUuid);
+      if (value.isNotEmpty) {
+        return value[0];
+      }
+      return null;
+    } catch (e) {
+      Logger.debug('OmiDeviceConnection: Error getting LED override mode: $e');
       return null;
     }
   }

@@ -9,6 +9,7 @@ file(GLOB app_sources
     src/mic.c
     src/battery.c
     src/led.c
+    src/led_override.c
     src/haptic.c
     src/sd_card.c
     src/spi_flash.c

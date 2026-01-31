@@ -9,6 +9,7 @@
 #include "lib/core/feedback.h"
 #include "lib/core/haptic.h"
 #include "lib/core/led.h"
+#include "lib/core/led_override.h"
 #include "lib/core/lib/battery/battery.h"
 #include "lib/core/mic.h"
 #ifdef CONFIG_OMI_ENABLE_MONITOR
@@ -131,6 +132,25 @@ void set_led_state()
     if (is_off) {
         led_off();
         return;
+    }
+
+    uint8_t override_mode = led_override_get();
+    if (override_mode != LED_OVERRIDE_NONE) {
+        switch (override_mode) {
+        case LED_OVERRIDE_GREEN_SOLID:
+            set_led_green(true);
+            set_led_blue(false);
+            set_led_red(false);
+            return;
+        case LED_OVERRIDE_GREEN_BLINK:
+            set_led_green(blink_toggle);
+            set_led_blue(false);
+            set_led_red(false);
+            blink_toggle = !blink_toggle;
+            return;
+        default:
+            break;
+        }
     }
 
     bool green = false;

@@ -115,6 +115,16 @@ In Settings → Developer Settings:
 
 When a wake phrase is detected in live transcripts, the app opens the default browser to the Agent Zero UI.
 
+### 3) Wake feedback (haptic + LED)
+
+On wake, the app triggers pendant haptics and sets a temporary LED override:
+
+- Wake detected → medium haptic + green blink.
+- After silence timeout (send) → short haptic + LED restored.
+
+If the pendant firmware does **not** include the LED override characteristic, the app falls back to LED brightness blinking.
+To enable true color control (green blink), flash the custom firmware update from this fork (see firmware notes below).
+
 ### 3) Always-on background capture
 
 In Settings → Developer Settings:
@@ -131,6 +141,8 @@ Android may still stop background services under aggressive battery settings. Fo
 - The Omi device receives OEM OTA updates independently of this app.
 - App updates are handled by building a new APK from this fork and installing over the existing app.
 - To stay current with OEM app changes, rebase/merge from upstream (see remotes section) and resolve any conflicts in our customization layer.
+- LED color override requires flashing the custom firmware in this repo; OEM OTA updates may overwrite it.
+  Keep a local build of the firmware and reflash after OEM OTA if needed, or maintain a custom OTA pipeline.
 
 ## Notes
 
