@@ -25,6 +25,7 @@ class DeveloperModeProvider extends BaseProvider {
   bool transcriptsToggled = false;
   bool audioBytesToggled = false;
   bool daySummaryToggled = false;
+  bool omiAlwaysOn = true;
 
   bool savingSettingsLoading = false;
 
@@ -105,6 +106,7 @@ class DeveloperModeProvider extends BaseProvider {
     webhookAudioBytesDelay.text = SharedPreferencesUtil().webhookAudioBytesDelay;
     omiOpenUrl.text = SharedPreferencesUtil().omiOpenUrl;
     omiWakePhrases.text = SharedPreferencesUtil().omiWakePhrasesRaw;
+    omiAlwaysOn = SharedPreferencesUtil().omiAlwaysOn;
     followUpQuestionEnabled = SharedPreferencesUtil().devModeJoanFollowUpEnabled;
     transcriptionDiagnosticEnabled = SharedPreferencesUtil().transcriptionDiagnosticEnabled;
     autoCreateSpeakersEnabled = SharedPreferencesUtil().autoCreateSpeakersEnabled;
@@ -214,6 +216,7 @@ class DeveloperModeProvider extends BaseProvider {
       prefs.webhookDaySummary = webhookDaySummary.text;
       prefs.omiOpenUrl = omiOpenUrl.text.trim();
       prefs.omiWakePhrasesRaw = omiWakePhrases.text.trim();
+      prefs.omiAlwaysOn = omiAlwaysOn;
     } catch (e) {
       Logger.error('Error occurred while updating endpoints: $e');
     }
@@ -251,6 +254,12 @@ class DeveloperModeProvider extends BaseProvider {
 
   void onAutoCreateSpeakersChanged(var value) {
     autoCreateSpeakersEnabled = value;
+    notifyListeners();
+  }
+
+  void onOmiAlwaysOnChanged(bool value) {
+    omiAlwaysOn = value;
+    SharedPreferencesUtil().omiAlwaysOn = value;
     notifyListeners();
   }
 

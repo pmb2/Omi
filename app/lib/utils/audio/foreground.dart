@@ -131,9 +131,9 @@ class ForegroundUtil {
           // Warn: 5m, for location tracking. If we want to support other services, we use the differenct interval,
           // such as 1m + self-validation in each service.
           eventAction: ForegroundTaskEventAction.repeat(60 * 1000 * 5),
-          autoRunOnBoot: false,
-          allowWakeLock: false,
-          allowWifiLock: false,
+          autoRunOnBoot: true,
+          allowWakeLock: true,
+          allowWifiLock: true,
         ),
       );
       _isInitialized = true;

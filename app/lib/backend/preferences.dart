@@ -50,6 +50,11 @@ class SharedPreferencesUtil {
       _preferences?.setString('omiWakePhrases', 'hey agent');
     }
 
+    final savedOmiAlwaysOn = _preferences?.getBool('omiAlwaysOn');
+    if (savedOmiAlwaysOn == null) {
+      _preferences?.setBool('omiAlwaysOn', true);
+    }
+
     final savedTranscriptWebhook = _preferences?.getString('webhookOnTranscriptReceived') ?? '';
     if (savedTranscriptWebhook.isEmpty) {
       _preferences?.setString('webhookOnTranscriptReceived', 'https://agent.backus.agency/omi_webhook');
@@ -184,11 +189,15 @@ class SharedPreferencesUtil {
     final raw = omiWakePhrasesRaw.trim();
     if (raw.isEmpty) return [];
     return raw
-        .split(',')
+        .split(RegExp(r'[,\n]'))
         .map((phrase) => phrase.trim())
         .where((phrase) => phrase.isNotEmpty)
         .toList();
   }
+
+  bool get omiAlwaysOn => getBool('omiAlwaysOn', defaultValue: true);
+
+  set omiAlwaysOn(bool value) => saveBool('omiAlwaysOn', value);
 
   String get recordingsLanguage => getString('recordingsLanguage', defaultValue: 'en');
 

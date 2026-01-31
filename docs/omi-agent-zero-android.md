@@ -115,6 +115,17 @@ In Settings → Developer Settings:
 
 When a wake phrase is detected in live transcripts, the app opens the default browser to the Agent Zero UI.
 
+### 3) Always-on background capture
+
+In Settings → Developer Settings:
+
+- **Always-on background capture**: enable to keep transcription streaming when the app is in the background.
+
+Android may still stop background services under aggressive battery settings. For best results:
+
+- Allow Omi to ignore battery optimizations.
+- Keep the foreground service notification enabled.
+
 ## OTA and updates
 
 - The Omi device receives OEM OTA updates independently of this app.

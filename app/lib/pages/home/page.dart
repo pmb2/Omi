@@ -248,13 +248,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _initiateApps();
 
-      // ForegroundUtil.requestPermissions();
       if (!PlatformService.isDesktop) {
-        if (SharedPreferencesUtil().locationEnabled) {
+        final alwaysOn = SharedPreferencesUtil().omiAlwaysOn;
+        if (alwaysOn || SharedPreferencesUtil().locationEnabled) {
+          await ForegroundUtil.requestPermissions();
           await ForegroundUtil.initializeForegroundService();
           await ForegroundUtil.startForegroundTask();
         } else {
-          Logger.debug('Skipping foreground service: location is not enabled');
+          Logger.debug('Skipping foreground service: always-on is disabled');
         }
       }
       if (mounted) {
@@ -1248,7 +1249,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
     _freemiumHandler.dispose();
     // Remove foreground task callback to prevent memory leak
     FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
-    ForegroundUtil.stopForegroundTask();
+    if (!SharedPreferencesUtil().omiAlwaysOn) {
+      ForegroundUtil.stopForegroundTask();
+    }
     super.dispose();
   }
 }
