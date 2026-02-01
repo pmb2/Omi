@@ -22,4 +22,10 @@ in the default browser when a wake phrase is detected in live transcripts.
 - The app uses the default browser (`LaunchMode.externalApplication`).
 - A short cooldown prevents duplicate opens from the same utterance.
 - This fork seeds defaults on first launch (wake URL, phrases, and transcript webhook).
+- If the secondary Omi backend socket drops, the app tags webhook payloads with
+  `fallback_to_omi=true` so Agent Zero can forward transcripts back to the Omi
+  backend for storage.
+- The app always includes `forward_to_omi=true` and `omi_auth_header` (Bearer
+  token) when available so Agent Zero can forward transcripts to Omi even when
+  custom STT is used.
 

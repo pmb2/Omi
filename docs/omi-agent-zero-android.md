@@ -105,6 +105,11 @@ In the Omi app:
 In Settings → Developer Settings:
 
 - **Real‑time Transcript** URL: use the pairing link from Agent Zero settings.
+  - If the Omi backend connection drops, the app marks webhook payloads with
+    `fallback_to_omi=true` so Agent Zero can forward transcripts to the Omi backend.
+  - The app always sends `forward_to_omi=true` and includes `omi_auth_header`
+    (Bearer token) when available so Agent Zero can forward transcripts to Omi
+    even when custom STT is used.
 
 ### 2) Wake phrase auto‑open
 

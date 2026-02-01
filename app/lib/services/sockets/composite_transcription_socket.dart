@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:omi/services/custom_stt_log_service.dart';
 import 'package:omi/services/sockets/pure_socket.dart';
+import 'package:omi/services/sockets/composite_socket_health.dart';
 import 'package:omi/utils/debug_log_manager.dart';
 import 'package:omi/utils/logger.dart';
 
@@ -64,6 +65,8 @@ class CompositeTranscriptionSocket implements IPureSocket {
 
     if (primaryOk && secondaryOk) {
       _status = PureSocketStatus.connected;
+      _secondaryAvailable = true;
+      CompositeSocketHealth.instance.setSecondaryAvailable(true);
       CustomSttLogService.instance.info('Composite', 'Both sockets connected');
       DebugLogManager.logEvent('composite_socket_connected', {
         'primary_status': primarySocket.status.toString(),
@@ -75,6 +78,7 @@ class CompositeTranscriptionSocket implements IPureSocket {
 
     if (primaryOk && allowSecondaryFailure) {
       _secondaryAvailable = false;
+      CompositeSocketHealth.instance.setSecondaryAvailable(false);
       _status = PureSocketStatus.connected;
       CustomSttLogService.instance.warning(
         'Composite',
@@ -120,6 +124,7 @@ class CompositeTranscriptionSocket implements IPureSocket {
     await _disconnectBothQuietly();
 
     _status = PureSocketStatus.disconnected;
+    CompositeSocketHealth.instance.setSecondaryAvailable(false);
     onClosed();
   }
 
@@ -134,12 +139,26 @@ class CompositeTranscriptionSocket implements IPureSocket {
     ]);
 
     _status = PureSocketStatus.disconnected;
+    CompositeSocketHealth.instance.setSecondaryAvailable(false);
   }
 
   /// Called when either socket closes unexpectedly
   void _onSocketClosed(String name, int? closeCode) {
     if (_status != PureSocketStatus.connected) {
       return; // Already handling disconnection
+    }
+
+    if (name == 'Secondary' && allowSecondaryFailure) {
+      _secondaryAvailable = false;
+      CompositeSocketHealth.instance.setSecondaryAvailable(false);
+      CustomSttLogService.instance.warning(
+        'Composite',
+        'Secondary socket closed (code: $closeCode), continuing with primary only',
+      );
+      DebugLogManager.logWarning('composite_socket_secondary_closed', {
+        'close_code': closeCode ?? -1,
+      });
+      return;
     }
 
     CustomSttLogService.instance.warning(
@@ -159,6 +178,16 @@ class CompositeTranscriptionSocket implements IPureSocket {
   /// Called when either socket errors
   void _onSocketError(String name, Object err, StackTrace trace) {
     if (_status != PureSocketStatus.connected) {
+      return;
+    }
+
+    if (name == 'Secondary' && allowSecondaryFailure) {
+      _secondaryAvailable = false;
+      CompositeSocketHealth.instance.setSecondaryAvailable(false);
+      CustomSttLogService.instance.warning('Composite', 'Secondary socket error; continuing with primary only');
+      DebugLogManager.logWarning('composite_socket_secondary_error', {
+        'error': err.toString(),
+      });
       return;
     }
 

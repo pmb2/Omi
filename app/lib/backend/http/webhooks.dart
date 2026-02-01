@@ -40,7 +40,12 @@ Future<String> webhookOnConversationCreatedCall(ServerConversation? conversation
   }
 }
 
-Future<String> webhookOnTranscriptReceivedCall(List<TranscriptSegment> segments, String sessionId) async {
+Future<String> webhookOnTranscriptReceivedCall(
+  List<TranscriptSegment> segments,
+  String sessionId, {
+  bool fallbackToOmiBackend = false,
+  bool forwardToOmiBackend = true,
+}) async {
   if (segments.isEmpty) return '';
   String url = SharedPreferencesUtil().webhookOnTranscriptReceived;
   if (url.isEmpty) return '';
@@ -50,9 +55,17 @@ Future<String> webhookOnTranscriptReceivedCall(List<TranscriptSegment> segments,
     url += '?uid=${SharedPreferencesUtil().uid}';
   }
   Logger.debug('triggerTranscriptRequestAtEndpoint: $url');
+  final authToken = SharedPreferencesUtil().authToken;
+  String? omiAuthHeader;
+  if (authToken.isNotEmpty) {
+    omiAuthHeader = authToken.startsWith('Bearer ') ? authToken : 'Bearer $authToken';
+  }
   final payload = {
     'session_id': sessionId,
     'segments': segments.map((s) => s.toJson()).toList(),
+    'fallback_to_omi': fallbackToOmiBackend,
+    'forward_to_omi': forwardToOmiBackend,
+    if (omiAuthHeader != null) 'omi_auth_header': omiAuthHeader,
   };
   try {
     final response = await makeApiCall(
